@@ -1,111 +1,100 @@
 #include <iostream>
-#define MAXN 20
 using namespace std;
 
-class PriorityQueue {
-	enum VrstaOdnosa {BezDjece, SamoLijevo, DesnoLijevo};
-	int insideArray[MAXN];
-	int lastElement;
+int const MAXSIZE = 10;
 
-	VrstaOdnosa PronadiOdnos(int tempIndex) {
-		if (tempIndex * 2 + 1 < lastElement) return DesnoLijevo;
-		else if (tempIndex * 2 < lastElement) return SamoLijevo;
-		else return BezDjece;
+class Item {
+public:
+	int _info;
+	int _priority;
+	
+	Item() {
+		this->_info = 0;
+		this->_priority = 0;
+	}
+
+	Item(int info, int priority) {
+		this->_info = info;
+		this->_priority = priority;
+	}
+
+	void Print() {
+		//cout << "Value   : " << this->_info << endl;
+		cout << "Priority: " << this->_priority << endl;
+	}
+};
+
+class PriorityQueue {
+private:
+	int _counter;
+	Item *_array[MAXSIZE]{ nullptr };
+
+	bool IsFull() {
+		if (this->_counter == MAXSIZE - 1)
+			return true;
+
+		return false;
+	}
+	bool IsEmpty() {
+		if (this->_counter == -1)
+			return true;
+
+		return false;
 	}
 
 public:
-	PriorityQueue() : lastElement(1) {
-		for (int i = 0; i < MAXN; i++)
-			insideArray[i] = (-1);
+	PriorityQueue() {
+		this->_counter = -1;
 	}
 
-	void Push(int tempInfo) {
-		insideArray[lastElement] = tempInfo;
-		int tempIndex = lastElement++;
-		while (tempIndex != 1)
-			if (insideArray[tempIndex / 2] < insideArray[tempIndex]) {
-				swap(insideArray[tempIndex / 2], insideArray[tempIndex]);
-				tempIndex /= 2;
-			}
-			else
-				break;
+	void Enqueue(Item i) {
+		if (this->IsFull())
+			return;
+
+		this->_counter++;
+		this->_array[this->_counter] = new Item(i);
 	}
 
-	bool IsEmpty() {
-		return (lastElement == 1);
-	}
+	Item *Dequeue() {
+		if (this->IsEmpty())
+			throw exception("queue is empty!");
 
-	bool Check(int tempIndex) {
-		VrstaOdnosa tempOdnos(PronadiOdnos(tempIndex));
-		if (BezDjece) return true;
-		else if (SamoLijevo) {
-			if (insideArray[tempIndex] > insideArray[tempIndex * 2]) return true;
-			else return false;
-		}
-		else {
-			if (insideArray[tempIndex] > insideArray[tempIndex * 2] && insideArray[tempIndex] > insideArray[tempIndex * 2 + 1])
-				return true;
-			else 
-				return false;
-		}
-	}
+		int best = 0;
+		for (int i = 1; i <= this->_counter; i++) 
+			if (this->_array[best]->_priority >= this->_array[i]->_priority) 
+				best = i;
 
-	int Pop() {
-		int tempIndex(1), tempValue(insideArray[1]);
-		insideArray[1] = insideArray[--lastElement];
-		while (tempIndex < lastElement) {
-			if (Check(tempIndex)) break; //ako se ne mozes vise spustiti, pa prekini
-			VrstaOdnosa tempOdnos = PronadiOdnos(tempIndex);
-			if (tempOdnos == SamoLijevo) { //ako se mozes spustiti na desno dijete samo
-				swap(insideArray[tempIndex], insideArray[tempIndex * 2]);
-				tempIndex *= 2;
-			}
-			else if (tempOdnos == DesnoLijevo) { //na desno ili lijevo dijete
-				if (insideArray[tempIndex * 2] >= insideArray[tempIndex * 2 + 1]) {
-					//cout << "lijevo je vece" << endl;
-					swap(insideArray[tempIndex], insideArray[tempIndex * 2]);
-					tempIndex *= 2;
-				}
-				else {
-					swap(insideArray[tempIndex], insideArray[tempIndex * 2 + 1]);
-					tempIndex = tempIndex * 2 + 1;
-				}
-			}
-			else
-				break;
-		}
-		return tempValue;
+		Item *toReturn = this->_array[best];
+		this->_array[best] = this->_array[this->_counter--];
+		return toReturn;
 	}
-	void PrintTree() {
-		cout << "      " << insideArray[1] << endl;
-		cout << "   " << insideArray[2] << "     " << insideArray[3] << endl;
-		cout << " " << insideArray[4] << "    " << insideArray[5] << endl;
-	}
-
 };
 
 int main() {
-	PriorityQueue p;
+	Item a(3, 3);
+	Item b(3, 7);
+	Item c(3, 5);
+	Item d(3, 1);
+	Item e(3, 2);
+	Item f(3, 4);
 
-	p.Push(4);
-	cout << "dodao 4" << endl;
-	p.Push(3);
-	cout << "dodao 3" << endl;
-	p.Push(10);
-	cout << "dodao 10" << endl;
-	p.Push(11);
-	cout << "dodao 11" << endl;
-	p.Push(123);
-	cout << "dodao 123" << endl;
+	PriorityQueue pq;
+	pq.Enqueue(a);
+	pq.Enqueue(b);
+	pq.Enqueue(c);
+	pq.Enqueue(d);
+	pq.Enqueue(e);
+	pq.Enqueue(f);
+
+	Item *best = pq.Dequeue();
+	best->Print();	
+	Item *best1 = pq.Dequeue();
+	best1->Print();
+	Item *best2 = pq.Dequeue();
+	best2->Print();
 
 
-	p.PrintTree();
-	cout << p.Pop() << endl;
-	cout << p.Pop() << endl;
-	cout << p.Pop() << endl;
-	cout << p.Pop() << endl;
-	cout << p.Pop() << endl;
-	
 
+	getchar();
 	return 0;
 }
